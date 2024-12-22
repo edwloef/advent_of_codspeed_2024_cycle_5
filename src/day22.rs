@@ -1,4 +1,4 @@
-use rayon::{iter::ParallelIterator as _, str::ParallelString};
+use rayon::{iter::ParallelIterator as _, str::ParallelString as _};
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Arc,

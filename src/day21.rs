@@ -1,7 +1,6 @@
 use ahash::{HashMap, HashMapExt as _};
 use arrayvec::ArrayVec;
 use itertools::Itertools as _;
-use memoize::memoize;
 use std::iter::{once, repeat_n};
 
 #[derive(Clone, Copy, Eq, Hash, PartialEq)]
@@ -53,19 +52,21 @@ pub fn part2(input: &str) -> u64 {
 }
 
 fn solve(input: &str, depth: u8) -> u64 {
+    let mut memo = HashMap::new();
+
     input
         .lines()
         .map(|line| {
             let mut numeric = 0;
             line.bytes().filter(|&c| c != b'A').for_each(|c| {
                 numeric *= 10;
-                numeric += (c - b'0') as u64;
+                numeric += u64::from(c - b'0');
             });
 
             let length = once(Keypad::A)
                 .chain(line.bytes().map(Keypad::from_byte))
                 .tuple_windows()
-                .map(|(last, cur)| recursive(last, cur, depth))
+                .map(|(last, cur)| recursive(last, cur, depth, &mut memo))
                 .sum::<u64>();
 
             numeric * length
@@ -73,10 +74,18 @@ fn solve(input: &str, depth: u8) -> u64 {
         .sum()
 }
 
-#[memoize(CustomHasher: HashMap)]
-fn recursive(last: Keypad, cur: Keypad, depth: u8) -> u64 {
+fn recursive(
+    last: Keypad,
+    cur: Keypad,
+    depth: u8,
+    memo: &mut HashMap<(Keypad, Keypad, u8), u64>,
+) -> u64 {
     if depth == 0 {
         return 1;
+    }
+
+    if let Some(result) = memo.get(&(last, cur, depth)) {
+        return *result;
     }
 
     let mut expand = ArrayVec::<Keypad, 6>::new();
@@ -103,7 +112,7 @@ fn recursive(last: Keypad, cur: Keypad, depth: u8) -> u64 {
     let mut count = expand
         .iter()
         .tuple_windows()
-        .map(|(&last, &cur)| recursive(last, cur, depth - 1))
+        .map(|(&last, &cur)| recursive(last, cur, depth - 1, memo))
         .sum::<u64>();
 
     if !(last.1 == 0 && cur.0 == 2 || cur.1 == 0 && last.0 == 2) {
@@ -112,10 +121,12 @@ fn recursive(last: Keypad, cur: Keypad, depth: u8) -> u64 {
                 .iter()
                 .rev()
                 .tuple_windows()
-                .map(|(&last, &cur)| recursive(last, cur, depth - 1))
+                .map(|(&last, &cur)| recursive(last, cur, depth - 1, memo))
                 .sum(),
         );
     }
+
+    memo.insert((last, cur, depth), count);
 
     count
 }
