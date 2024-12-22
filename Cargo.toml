@@ -1,0 +1,13 @@
+[package]
+name = "advent_of_codspeed_2024_cycle_5"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ahash = "0.8.11"
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
+arrayvec = "0.7.6"
+itertools = "0.13.0"
+memoize = "0.4.2"
+rayon = "1.10.0"
