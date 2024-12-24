@@ -5,36 +5,22 @@ use std::iter::once;
 pub fn part1(input: &str) -> u32 {
     let input = parse(input);
 
-    input
-        .keys()
-        .map(|node| dfs(&input, node, node, 3, node.as_bytes()[0] == b't'))
-        .sum::<u32>()
-        / 6
-}
+    let mut count = 0;
 
-fn dfs<'a>(
-    graph: &HashMap<&str, HashSet<&'a str>>,
-    from: &str,
-    cur: &'a str,
-    len: u8,
-    t_seen: bool,
-) -> u32 {
-    if len == 1 {
-        return (t_seen && graph[cur].contains(&from)).into();
+    for node1 in input.keys() {
+        let t1 = node1.starts_with('t');
+        for node2 in &input[node1] {
+            let t2 = node2.starts_with('t');
+            for node3 in &input[node2] {
+                let t3 = node3.starts_with('t');
+                if (t1 || t2 || t3) && input[node3].contains(node1) {
+                    count += 1;
+                }
+            }
+        }
     }
 
-    graph[cur]
-        .iter()
-        .map(|child| {
-            dfs(
-                graph,
-                from,
-                child,
-                len - 1,
-                t_seen || child.as_bytes()[0] == b't',
-            )
-        })
-        .sum()
+    count / 6
 }
 
 pub fn part2(input: &str) -> String {
